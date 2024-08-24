@@ -38,6 +38,10 @@ Examples:
     python3 generate.py --auto --temp 18 auto_18C // enable automatic mode and set temperature to 18C
 
     python3 generate.py --open --air_out --speed 30 manual_30p // manual mode, open lid, air out, 30% fan speed
+    
+For automatic mode, the `temp` argument is required, `air_in` is optional (default is `air_out`).  
+For manual mode, `open`/`close`, `air_in`/`air_out` and `speed` are required.  
+When the fan is off, the lid is closed by default. `open` can be specified optionally to turn the fan off with the lid open.
 
 
 ## Background
@@ -58,7 +62,8 @@ The first block of 7 bits encodes the state of the fan:
     0 0 1 1 1 1 1  # Manual mode, Closed
     1 0 1 1 0 1 1  # Automatic mode, Air in
     1 0 0 1 0 1 1  # Automatic mode, Air out
-    1 1 1 1 1 1 1  # Off
+    1 1 1 1 1 1 1  # Off, Lid closed
+    1 1 1 0 1 1 1  # Off, Lid open
 
 
 ##### Fan Speed:
@@ -81,20 +86,20 @@ I'm not sure how this value is encoded here, so I enumerated all possibilities:
 There are 40 possible temperatures for the automatic mode (-2C - 37C).  
 Again, I'm not sure how these values are encoded so I enumerated all possibilities:
 
-    0 1 0 0 0 1 1   # -2      0 0 1 1 0 0 1   # 11     0 0 1 0 1 1 0   # 24
-    0 0 0 0 0 1 1   # -1      0 1 0 1 0 0 1   # 12     0 1 0 0 1 1 0   # 25
-    1 1 1 1 1 0 1   # 0       0 0 0 1 0 0 1   # 13     1 0 0 0 1 1 0   # 26
-    0 1 1 1 1 0 1   # 1       0 1 1 0 0 0 1   # 14     1 1 1 1 0 1 0   # 27
-    0 0 1 1 1 0 1   # 2       0 0 1 0 0 0 1   # 15     1 0 1 1 0 1 0   # 28
-    0 1 0 1 1 0 1   # 3       1 1 0 0 0 0 1   # 16     1 1 0 1 0 1 0   # 29
-    0 0 0 1 1 0 1   # 4       1 0 0 0 0 0 1   # 17     1 0 0 1 0 1 0   # 30
-    0 1 1 0 1 0 1   # 5       1 1 1 1 1 1 0   # 18     0 0 0 1 0 1 0   # 31
-    1 0 1 0 1 0 1   # 6       1 0 1 1 1 1 0   # 19     0 1 1 0 0 1 0   # 32
-    1 1 0 0 1 0 1   # 7       1 1 0 1 1 1 0   # 20     0 0 1 0 0 1 0   # 33
-    1 0 0 0 1 0 1   # 8       0 1 0 1 1 1 0   # 21     0 1 0 0 0 1 0   # 34
-    1 1 1 1 0 0 1   # 9       0 0 0 1 1 1 0   # 22     0 0 0 0 0 1 0   # 35
-    1 0 1 1 0 0 1   # 10      0 1 1 0 1 1 0   # 23     1 1 1 1 1 0 0   # 36
-                                                       1 0 1 1 1 0 0   # 37
+    0 1 0 0 0 1 1  # -2      0 0 1 1 0 0 1  # 11     0 0 1 0 1 1 0  # 24
+    0 0 0 0 0 1 1  # -1      0 1 0 1 0 0 1  # 12     0 1 0 0 1 1 0  # 25
+    1 1 1 1 1 0 1  # 0       0 0 0 1 0 0 1  # 13     1 0 0 0 1 1 0  # 26
+    0 1 1 1 1 0 1  # 1       0 1 1 0 0 0 1  # 14     1 1 1 1 0 1 0  # 27
+    0 0 1 1 1 0 1  # 2       0 0 1 0 0 0 1  # 15     1 0 1 1 0 1 0  # 28
+    0 1 0 1 1 0 1  # 3       1 1 0 0 0 0 1  # 16     1 1 0 1 0 1 0  # 29
+    0 0 0 1 1 0 1  # 4       1 0 0 0 0 0 1  # 17     1 0 0 1 0 1 0  # 30
+    0 1 1 0 1 0 1  # 5       1 1 1 1 1 1 0  # 18     0 0 0 1 0 1 0  # 31
+    1 0 1 0 1 0 1  # 6       1 0 1 1 1 1 0  # 19     0 1 1 0 0 1 0  # 32
+    1 1 0 0 1 0 1  # 7       1 1 0 1 1 1 0  # 20     0 0 1 0 0 1 0  # 33
+    1 0 0 0 1 0 1  # 8       0 1 0 1 1 1 0  # 21     0 1 0 0 0 1 0  # 34
+    1 1 1 1 0 0 1  # 9       0 0 0 1 1 1 0  # 22     0 0 0 0 0 1 0  # 35
+    1 0 1 1 0 0 1  # 10      0 1 1 0 1 1 0  # 23     1 1 1 1 1 0 0  # 36
+                                                     1 0 1 1 1 0 0  # 37
 
 
 ##### Checksum:

@@ -136,11 +136,11 @@ def gen_signal():
     speed = BitArray(bin="1000001")
     temp = BitArray(bin="0000000")
     unknown = BitArray(bin="000000000010011101")
-    check_sum = BitArray(bin="0000000")
+    checksum = BitArray(bin="0000000")
     end = BitArray(bin="0000000")
 
     if (args.auto):
-        # automatic mode: set state and temperature
+        # automatic mode: set state and temperature and air in/out
         state = states["auto"]
         if (args.air_in):
             state = state.__ior__(states["air_in"])
@@ -154,7 +154,7 @@ def gen_signal():
         speed = fan_speeds[DEFAULT_FANSPEED]
         temp = temperatures[DEFAULT_TEMP]
     else:
-        ##manual mode: set state, speed and temperature
+        # manual mode: set state, speed and temperature
         state = states["manual"]
         if (args.open):
             state = state.__ior__(states["open"])
@@ -166,13 +166,13 @@ def gen_signal():
         temp = temperatures[DEFAULT_TEMP]
 
     # calculate checksum
-    check_sum[0] = (state[0] ^ speed[0] ^ temp[0])
-    check_sum[1] = (state[1] ^ speed[1] ^ temp[1])
-    check_sum[2] = not (state[2] ^ speed[2] ^ temp[2])
-    check_sum[3] = not (state[3] ^ speed[3] ^ temp[3])
-    check_sum[4] = not (state[4] ^ speed[4] ^ temp[4])
-    check_sum[5] = (state[5] ^ speed[5] ^ temp[5])
-    check_sum[6] = not (state[6] ^ speed[6] ^ temp[6])
+    checksum[0] = (state[0] ^ speed[0] ^ temp[0])
+    checksum[1] = (state[1] ^ speed[1] ^ temp[1])
+    checksum[2] = not (state[2] ^ speed[2] ^ temp[2])
+    checksum[3] = not (state[3] ^ speed[3] ^ temp[3])
+    checksum[4] = not (state[4] ^ speed[4] ^ temp[4])
+    checksum[5] = (state[5] ^ speed[5] ^ temp[5])
+    checksum[6] = not (state[6] ^ speed[6] ^ temp[6])
 
     signal.append(start)
     signal.append(state)
@@ -183,8 +183,9 @@ def gen_signal():
     signal.append(separator)
     signal.append(unknown)
     signal.append(separator)
-    signal.append(check_sum)
+    signal.append(checksum)
     signal.append(end)
+    print(state.bin)
     return signal
 
 def bin_to_flipper(binary, name):
