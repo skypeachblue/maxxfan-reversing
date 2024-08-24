@@ -97,8 +97,8 @@ Again, I'm not sure how these values are encoded so I enumerated all possibiliti
                                                        1 0 1 1 1 0 0   # 37
 
 
-##### Check sum:
-Figuring out how the check sum is calculated was a bit tricky.
+##### Checksum:
+Figuring out how the checksum is calculated was a bit tricky.
 Through some trial and error I was able to determine this:
 
     checksum[0] = state[0] XOR speed[0] XOR temperature[0]
