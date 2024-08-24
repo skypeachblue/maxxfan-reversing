@@ -97,7 +97,7 @@ parser.add_argument("--air_out",
                     help="Air out")
 parser.add_argument("--off",
                     action="store_true",
-                    help="Turn fan off (ignores all other arguments)")
+                    help="Turn fan off (ignores other arguments except for open/close)")
 args = parser.parse_args()
 
 if (args.auto and not args.temp):
@@ -149,6 +149,8 @@ def gen_signal():
     elif (args.off):
         # turn fan off
         state = states["off"]
+        if (args.open):
+            state[3] = 0
         speed = fan_speeds[DEFAULT_FANSPEED]
         temp = temperatures[DEFAULT_TEMP]
     else:
