@@ -3,7 +3,7 @@
 import argparse
 from bitstring import BitArray
 
-TICK = 800
+TICK_US = 800
 DEFAULT_TEMP = "20"
 DEFAULT_FANSPEED = "20"
 
@@ -82,7 +82,7 @@ parser.add_argument("--auto",
 parser.add_argument("--temp",
                     help="Set Temperature (-2 to 37) for automatic mode, ignored in manual mode")
 parser.add_argument("--speed",
-                    help="Set fan speed in percent {10,20,30,40,50,60,70,80,90,100}, ignored in automatic mode")
+                    help="Set fan speed in percent (one of 10,20,30,40,50,60,70,80,90,100), ignored in automatic mode")
 parser.add_argument("--open",
                     action="store_true",
                     help="Open lid, ignored in automatic mode")
@@ -97,7 +97,7 @@ parser.add_argument("--air_out",
                     help="Air out")
 parser.add_argument("--off",
                     action="store_true",
-                    help="Turn off (ignores all other arguments)")
+                    help="Turn fan off (ignores all other arguments)")
 args = parser.parse_args()
 
 if (args.auto and not args.temp):
@@ -140,16 +140,19 @@ def gen_signal():
     end = BitArray(bin="0000000")
 
     if (args.auto):
+        # automatic mode: set state and temperature
         state = states["auto"]
         if (args.air_in):
             state = state.__ior__(states["air_in"])
         speed = fan_speeds[DEFAULT_FANSPEED]
         temp = temperatures[args.temp]
     elif (args.off):
+        # turn fan off
         state = states["off"]
         speed = fan_speeds[DEFAULT_FANSPEED]
         temp = temperatures[DEFAULT_TEMP]
     else:
+        ##manual mode: set state, speed and temperature
         state = states["manual"]
         if (args.open):
             state = state.__ior__(states["open"])
@@ -160,6 +163,7 @@ def gen_signal():
         speed = fan_speeds[args.speed]
         temp = temperatures[DEFAULT_TEMP]
 
+    # calculate checksum
     check_sum[0] = (state[0] ^ speed[0] ^ temp[0])
     check_sum[1] = (state[1] ^ speed[1] ^ temp[1])
     check_sum[2] = not (state[2] ^ speed[2] ^ temp[2])
@@ -189,7 +193,7 @@ def bin_to_flipper(binary, name):
         if (int(binary[i]) == one_or_zero):
             num_ticks += 1
         else:
-            ret += str(num_ticks * TICK)
+            ret += str(num_ticks * TICK_US)
             ret += " "
             one_or_zero = 1 - one_or_zero # swap 0 / 1
             num_ticks = 1
@@ -197,7 +201,7 @@ def bin_to_flipper(binary, name):
 
 if __name__ == '__main__':
     signal = gen_signal()
-    print(signal.bin)
-    print("")
+    #print(signal.bin)
+    #print("")
     flipper = bin_to_flipper(signal.bin, args.name)
     print(flipper)

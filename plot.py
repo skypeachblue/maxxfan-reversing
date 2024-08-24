@@ -17,11 +17,12 @@ parser.add_argument("num",
 args = parser.parse_args()
 
 LEN_SIGNAL = 180
-TICK = 800
+TICK_US = 800
 
 signals = np.zeros((args.num, LEN_SIGNAL), dtype=np.uint8)
 i = 0
 
+# read data from flipper file
 with open(args.file, 'r') as file:
     for line in file:
         if not line.startswith("data"):
@@ -33,7 +34,8 @@ with open(args.file, 'r') as file:
         sum = 0
         for item in arr:
             sum += int(item)
-            ticks = round(int(item) / TICK)
+            # convert lengths to binary
+            ticks = round(int(item) / TICK_US)
             for _ in range(ticks):
                 if (one_or_zero):
                     signals[i, j] = 1
@@ -41,7 +43,7 @@ with open(args.file, 'r') as file:
                     signals[i, j] = 0
                 j += 1
             one_or_zero = not one_or_zero
-        #print(round(sum / TICK))
+        #print(round(sum / TICK_US))
         #print('')
         i += 1
         if (i >= args.num):
@@ -49,6 +51,7 @@ with open(args.file, 'r') as file:
 
 #print(signals)
 
+# plot signals
 for i in range(args.num):
     plt.plot(signals[i])
 plt.show()
