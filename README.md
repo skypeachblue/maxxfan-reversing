@@ -79,7 +79,22 @@ I'm not sure how this value is encoded here, so I enumerated all possibilities:
 
 ##### Temperature:
 There are 40 possible temperatures for the automatic mode (-2C - 37C).  
-Again, I'm not sure how these values are encoded so I enumerated all possibilities (can be found [here](generate.py#L33)).
+Again, I'm not sure how these values are encoded so I enumerated all possibilities:
+
+    0 1 0 0 0 1 1   # -2      0 0 1 1 0 0 1   # 11     0 0 1 0 1 1 0   # 24
+    0 0 0 0 0 1 1   # -1      0 1 0 1 0 0 1   # 12     0 1 0 0 1 1 0   # 25
+    1 1 1 1 1 0 1   # 0       0 0 0 1 0 0 1   # 13     1 0 0 0 1 1 0   # 26
+    0 1 1 1 1 0 1   # 1       0 1 1 0 0 0 1   # 14     1 1 1 1 0 1 0   # 27
+    0 0 1 1 1 0 1   # 2       0 0 1 0 0 0 1   # 15     1 0 1 1 0 1 0   # 28
+    0 1 0 1 1 0 1   # 3       1 1 0 0 0 0 1   # 16     1 1 0 1 0 1 0   # 29
+    0 0 0 1 1 0 1   # 4       1 0 0 0 0 0 1   # 17     1 0 0 1 0 1 0   # 30
+    0 1 1 0 1 0 1   # 5       1 1 1 1 1 1 0   # 18     0 0 0 1 0 1 0   # 31
+    1 0 1 0 1 0 1   # 6       1 0 1 1 1 1 0   # 19     0 1 1 0 0 1 0   # 32
+    1 1 0 0 1 0 1   # 7       1 1 0 1 1 1 0   # 20     0 0 1 0 0 1 0   # 33
+    1 0 0 0 1 0 1   # 8       0 1 0 1 1 1 0   # 21     0 1 0 0 0 1 0   # 34
+    1 1 1 1 0 0 1   # 9       0 0 0 1 1 1 0   # 22     0 0 0 0 0 1 0   # 35
+    1 0 1 1 0 0 1   # 10      0 1 1 0 1 1 0   # 23     1 1 1 1 1 0 0   # 36
+                                                       1 0 1 1 1 0 0   # 37
 
 
 ##### Check sum:
