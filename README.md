@@ -1,6 +1,8 @@
-# Airxcel MaxxAir MaxxFan Deluxe - IR Remote Reversing
+# Airxcel MaxxAir MaxxFan Deluxe - IR Remote Control Reversing
 
-Carrier frequency: 38kHz
+This repo documents the results of reverse engineering the [MaxxFan Deluxe 07500K](https://www.maxxair.com/products/fans/maxxfan-deluxe-00-07500K/) remote control, in order to be able to control the MaxxFan in other ways.
+
+The carrier frequency of the signal is 38kHz.
 
 ## Dependencies
 * bitstring
@@ -9,7 +11,10 @@ Carrier frequency: 38kHz
 * numpy
 
 ## Usage
-plot.py can be used to print IR signals captured by the Flipper Zero.
+
+**Keep in mind that this can be used to generate signals which the original remote doesn't allow (e.g. fan spinning with lid closed), so use at your own risk :)**
+
+`plot.py` can be used to print IR signals captured by the Flipper Zero.
 
 Usage:
 
@@ -20,7 +25,7 @@ Example:
     python3 plot.py ./Maxxfan_collection.ir 97
 
 
-generate.py can be used to generate IR signals for the Flipper Zero to send. The signal name can be chosen arbitrarily.
+`generate.py` can be used to generate IR signals for the Flipper Zero to send. The signal name can be chosen arbitrarily.
 
 Usage:
 
@@ -34,20 +39,18 @@ Examples:
 
     python3 generate.py --open --air_out --speed 30 manual_30p // manual mode, open lid, air out, 30% fan speed
 
-*Keep in mind that this can be used to generate signals which the original remote doesn't allow (e.g. fan spinning with lid closed), so use at your own risk :)*
 
 ## Background
 
-As a first step I collected ~90 signals using the Flipper Zero.
+As a first step I collected 90+ signals with a Flipper Zero.
 
-<img src=img/signals.png width=600>
+<img src=img/signals.png width=800>
 
-Plotting these signals, it became apparent that a large part of the signal always stays the same.
-Only four parts of the signal (seven bits each) actually change.
+Plotting these signals, it becomes apparent that a large part of the signal always stays the same.
+Only four parts of the signal (7 bits each) actually change.
 
 
 ##### State:
-
 The first block of 7 bits encodes the state of the fan:
 
     0 1 1 0 1 1 1  # Manual mode, Open, Air in
@@ -59,7 +62,6 @@ The first block of 7 bits encodes the state of the fan:
 
 
 ##### Fan Speed:
-
 For the fan speed there are only 10 possibilities (10% - 100%).
 I'm not sure how this value is encoded here, so I enumerated all possibilities:
 
@@ -76,14 +78,11 @@ I'm not sure how this value is encoded here, so I enumerated all possibilities:
 
 
 ##### Temperature:
-
-There are 40 possible temperatures for the automatic mode (-2C - 37C).
-Again, I'm not sure how these values are encoded so I enumerated all possibilities.
-(Can be found [here](generate.py#L33)).
+There are 40 possible temperatures for the automatic mode (-2C - 37C).  
+Again, I'm not sure how these values are encoded so I enumerated all possibilities (can be found [here](generate.py#L33)).
 
 
 ##### Check sum:
-
 Figuring out how the check sum is calculated was a bit tricky.
 Through some trial and error I was able to determine this:
 
