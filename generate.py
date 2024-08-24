@@ -98,7 +98,6 @@ parser.add_argument("--air_out",
 parser.add_argument("--off",
                     action="store_true",
                     help="Turn off (ignores all other arguments)")
-
 args = parser.parse_args()
 
 if (args.auto and not args.temp):
@@ -136,7 +135,7 @@ def gen_signal():
     separator = BitArray(bin="1001")
     speed = BitArray(bin="1000001")
     temp = BitArray(bin="0000000")
-    missing = BitArray(bin="000000000010011101")
+    unknown = BitArray(bin="000000000010011101")
     check_sum = BitArray(bin="0000000")
     end = BitArray(bin="0000000")
 
@@ -176,7 +175,7 @@ def gen_signal():
     signal.append(separator)
     signal.append(temp)
     signal.append(separator)
-    signal.append(missing)
+    signal.append(unknown)
     signal.append(separator)
     signal.append(check_sum)
     signal.append(end)
