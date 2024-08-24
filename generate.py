@@ -3,13 +3,18 @@
 import argparse
 from bitstring import BitArray
 
+TICK = 800
+DEFAULT_TEMP = "20"
+DEFAULT_FANSPEED = "20"
+
 states = {
     "auto"   : BitArray(bin="1001011"),
-    "open"   : BitArray(bin="0100111"),
-    "closed" : BitArray(bin="0001111"),
-    "air_in" : BitArray(bin="0010111"),
-    "air_out": BitArray(bin="0000111"),
+    "manual" : BitArray(bin="0000111"),
+    "open"   : BitArray(bin="0100000"),
+    "air_in" : BitArray(bin="0010000"),
+    "closed" : BitArray(bin="0001000"),
     "off"    : BitArray(bin="1111111"),
+    #"air_out": BitArray(bin="0000000"),
 }
 
 fan_speeds = {
@@ -28,16 +33,16 @@ fan_speeds = {
 temperatures = {
     "-2": BitArray(bin="0100011"),
     "-1": BitArray(bin="0000011"),
-    "0 ": BitArray(bin="1111101"),
-    "1 ": BitArray(bin="0111101"),
-    "2 ": BitArray(bin="0011101"),
-    "3 ": BitArray(bin="0101101"),
-    "4 ": BitArray(bin="0001101"),
-    "5 ": BitArray(bin="0110101"),
-    "6 ": BitArray(bin="1010101"),
-    "7 ": BitArray(bin="1100101"),
-    "8 ": BitArray(bin="1000101"),
-    "9 ": BitArray(bin="1111001"),
+    "0" : BitArray(bin="1111101"),
+    "1" : BitArray(bin="0111101"),
+    "2" : BitArray(bin="0011101"),
+    "3" : BitArray(bin="0101101"),
+    "4" : BitArray(bin="0001101"),
+    "5" : BitArray(bin="0110101"),
+    "6" : BitArray(bin="1010101"),
+    "7" : BitArray(bin="1100101"),
+    "8" : BitArray(bin="1000101"),
+    "9" : BitArray(bin="1111001"),
     "10": BitArray(bin="1011001"),
     "11": BitArray(bin="0011001"),
     "12": BitArray(bin="0101001"),
@@ -69,9 +74,11 @@ temperatures = {
 }
 
 parser=argparse.ArgumentParser()
+parser.add_argument("name",
+                    help="Name for the signal in flipper file")
 parser.add_argument("--auto",
                     action="store_true",
-                    help="Enable automatic mode (requires temperature)")
+                    help="Enable automatic mode (requires temperature). Default: air_out")
 parser.add_argument("--temp",
                     help="Set Temperature (-2 to 37) for automatic mode, ignored in manual mode")
 parser.add_argument("--speed",
@@ -92,18 +99,18 @@ parser.add_argument("--off",
                     action="store_true",
                     help="Turn off (ignores all other arguments)")
 
-args=parser.parse_args()
+args = parser.parse_args()
 
 if (args.auto and not args.temp):
     exit("You need to specify a temperature")
 if (args.temp and not args.auto):
-    exit("You need to enable automatic mode")
+    exit("Temperature is only valid in automatic mode")
 if (args.open and args.close):
     exit("Open and close are mutually exclusive")
 if (args.air_in and args.air_out):
     exit("Air in and out are mutually exclusive")
 if (not args.auto and ((not args.open and not args.close) or (not args.air_in and not args.air_out) or not args.speed) and not args.off):
-    exit("For manual mode you need to specify open/close and air in/out and fan speed")
+    exit("For manual mode you need to specify open/close, air_in/out and fan speed")
 if args.speed:
     found_speed = False
     for speed in fan_speeds:
@@ -121,18 +128,77 @@ if args.temp:
     if not found_temp:
         exit("Invalid temperature")
 
-LEN_SIGNAL = 180
-TICK = 800
-DEFAULT_TEMP = "20"
-DEFAULT_FANSPEED = "20"
 
-start = BitArray(bin="110100101001010110100011111111000100000001001111111010010000001000111111011001000001000011111011100111001100001")
-state = BitArray(bin="0000000")
-seperator = BitArray(bin="1001")
-fan_speed = BitArray(bin="1000001")
-temperature = BitArray(bin="0000000")
-idk = BitArray(bin="000000000010011101")
-check_sum = BitArray(bin="0000000")
-end = BitArray(bin="0000000")
+def gen_signal():
+    signal = BitArray(bin="")
+    start = BitArray(bin="110100101001010110100011111111000100000001001111111010010000001000111111011001000001000011111011100111001100001")
+    state = BitArray(bin="0000000")
+    separator = BitArray(bin="1001")
+    speed = BitArray(bin="1000001")
+    temp = BitArray(bin="0000000")
+    missing = BitArray(bin="000000000010011101")
+    check_sum = BitArray(bin="0000000")
+    end = BitArray(bin="0000000")
 
+    if (args.auto):
+        state = states["auto"]
+        if (args.air_in):
+            state = state.__ior__(states["air_in"])
+        speed = fan_speeds[DEFAULT_FANSPEED]
+        temp = temperatures[args.temp]
+    elif (args.off):
+        state = states["off"]
+        speed = fan_speeds[DEFAULT_FANSPEED]
+        temp = temperatures[DEFAULT_TEMP]
+    else:
+        state = states["manual"]
+        if (args.open):
+            state = state.__ior__(states["open"])
+        else:
+            state = state.__ior__(states["closed"])
+        if (args.air_in):
+            state = state.__ior__(states["air_in"])
+        speed = fan_speeds[args.speed]
+        temp = temperatures[DEFAULT_TEMP]
 
+    check_sum[0] = (state[0] ^ speed[0] ^ temp[0])
+    check_sum[1] = (state[1] ^ speed[1] ^ temp[1])
+    check_sum[2] = not (state[2] ^ speed[2] ^ temp[2])
+    check_sum[3] = not (state[3] ^ speed[3] ^ temp[3])
+    check_sum[4] = not (state[4] ^ speed[4] ^ temp[4])
+    check_sum[5] = (state[5] ^ speed[5] ^ temp[5])
+    check_sum[6] = not (state[6] ^ speed[6] ^ temp[6])
+
+    signal.append(start)
+    signal.append(state)
+    signal.append(separator)
+    signal.append(speed)
+    signal.append(separator)
+    signal.append(temp)
+    signal.append(separator)
+    signal.append(missing)
+    signal.append(separator)
+    signal.append(check_sum)
+    signal.append(end)
+    return signal
+
+def bin_to_flipper(binary, name):
+    ret = f"Filetype: IR signals file\nVersion: 1\n#\nname: {name}\ntype: raw\nfrequency: 38000\nduty_cycle: 0.330000\ndata: "
+    one_or_zero = 1
+    num_ticks = 0
+    for i in range(len(binary)):
+        if (int(binary[i]) == one_or_zero):
+            num_ticks += 1
+        else:
+            ret += str(num_ticks * TICK)
+            ret += " "
+            one_or_zero = 1 - one_or_zero # swap 0 / 1
+            num_ticks = 1
+    return ret
+
+if __name__ == '__main__':
+    signal = gen_signal()
+    print(signal.bin)
+    print("")
+    flipper = bin_to_flipper(signal.bin, args.name)
+    print(flipper)
