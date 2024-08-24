@@ -1,4 +1,4 @@
-# Airxcel MaxxAir MaxxFan Deluxe - IR Remote Control Reversing
+# Airxcel MaxxAir MaxxFan Deluxe - IR Remote Control Reverse Engineering
 
 This repo documents the results of reverse engineering the [MaxxFan Deluxe 07500K](https://www.maxxair.com/products/fans/maxxfan-deluxe-00-07500K/) remote control, in order to be able to control the MaxxFan in other ways.
 
