@@ -21,11 +21,11 @@ The carrier frequency of the signal is 38kHz.
 
 Usage:
 
-    python3 plot.py <filename> <number of signals>
+    python3 plot.py <filename>
 
 Example:
 
-    python3 plot.py ./Maxxfan_collection.ir 97
+    python3 plot.py ./Maxxfan_collection.ir
 
 
 `generate.py` can be used to generate IR signals for the Flipper Zero to send.
