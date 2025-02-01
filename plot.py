@@ -11,48 +11,37 @@ np.set_printoptions(linewidth=200)
 parser=argparse.ArgumentParser()
 parser.add_argument("file",
                     help="Name of the Flipper IR file")
-parser.add_argument("num",
-                    type=int,
-                    help="Number of signals to plot")
 args = parser.parse_args()
 
 LEN_SIGNAL = 180
 TICK_US = 800
 
-signals = np.zeros((args.num, LEN_SIGNAL), dtype=np.uint8)
-i = 0
+signals = []
 
 # read data from flipper file
 with open(args.file, 'r') as file:
     for line in file:
         if not line.startswith("data"):
             continue
-        line = line[6:]
+        new_signal = np.zeros((LEN_SIGNAL), dtype=np.uint8)
+        line = line[6:].strip()
         arr = line.split(' ')
-        j = 0
         one_or_zero = True
-        sum = 0
+        i = 0
         for item in arr:
-            sum += int(item)
             # convert lengths to binary
             ticks = round(int(item) / TICK_US)
             for _ in range(ticks):
                 if (one_or_zero):
-                    signals[i, j] = 1
+                    new_signal[i] = 1
                 else:
-                    signals[i, j] = 0
-                j += 1
+                    new_signal[i] = 0
+                i += 1
             one_or_zero = not one_or_zero
-        #print(round(sum / TICK_US))
-        #print('')
-        i += 1
-        if (i >= args.num):
-            break
-
-#print(signals)
+        signals.append(new_signal)
 
 # plot signals
-for i in range(args.num):
+for i in range(len(signals)):
     plt.plot(signals[i])
 plt.show()
 plt.close()
