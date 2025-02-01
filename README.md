@@ -1,6 +1,8 @@
 # Airxcel MaxxAir MaxxFan Deluxe - IR Remote Control Reverse Engineering
 
-This repo documents the results of reverse engineering the [MaxxFan Deluxe 07500K](https://www.maxxair.com/products/fans/maxxfan-deluxe-00-07500K/) remote control, in order to be able to control the MaxxFan in other ways.
+This repo documents the results of reverse engineering the
+[MaxxFan Deluxe 07500K](https://www.maxxair.com/products/fans/maxxfan-deluxe-00-07500K/)
+remote control, in order to be able to control the MaxxFan in other ways.
 
 The carrier frequency of the signal is 38kHz.
 
@@ -12,7 +14,8 @@ The carrier frequency of the signal is 38kHz.
 
 ## Usage
 
-**Keep in mind that this can be used to generate signals which the original remote doesn't allow (e.g. fan spinning with lid closed), so use at your own risk :)**
+**Keep in mind that this can be used to generate signals which the original remote doesn't allow
+(e.g. fan spinning with lid closed), so use at your own risk :)**
 
 `plot.py` can be used to print IR signals captured by the Flipper Zero.
 
@@ -25,7 +28,8 @@ Example:
     python3 plot.py ./Maxxfan_collection.ir 97
 
 
-`generate.py` can be used to generate IR signals for the Flipper Zero to send. The signal name can be chosen arbitrarily.
+`generate.py` can be used to generate IR signals for the Flipper Zero to send.
+The signal name can be chosen arbitrarily.
 
 Usage:
 
@@ -41,7 +45,8 @@ Examples:
     
 For automatic mode, the `temp` argument is required, `air_in` is optional (default is `air_out`).  
 For manual mode, `open`/`close`, `air_in`/`air_out` and `speed` are required.  
-When the fan is off, the lid is closed by default. `open` can be specified optionally to turn the fan off with the lid open.
+When the fan is off, the lid is closed by default. `open` can be specified optionally to
+turn the fan off with the lid open.
 
 
 ## Background
@@ -55,6 +60,7 @@ Only four parts of the signal (7 bits each) actually change.
 
 
 ##### State:
+
 The first block of 7 bits encodes the state of the fan:
 
     0 1 1 0 1 1 1  # Manual mode, Open, Air in
@@ -67,8 +73,8 @@ The first block of 7 bits encodes the state of the fan:
 
 
 ##### Fan Speed:
-For the fan speed there are only 10 possibilities (10% - 100%).
-I'm not sure how this value is encoded here, so I enumerated all possibilities:
+
+For the fan speed there are only 10 possibilities (10% - 100%):
 
     1 0 1 0 1 1 1  # 10%
     1 1 0 1 0 1 1  # 20%
@@ -81,10 +87,15 @@ I'm not sure how this value is encoded here, so I enumerated all possibilities:
     1 0 1 0 0 1 0  # 90%
     1 1 0 1 1 0 0  # 100%
 
+As wingspinner noted in
+Issue https://github.com/skypeachblue/maxxfan-reversing/issues/1#issuecomment-2445494639
+the values for the fan speed are bit reversed and inverted:
+
+e.g. 1010111 = 0001010 = 10
 
 ##### Temperature:
-There are 40 possible temperatures for the automatic mode (-2C - 37C).  
-Again, I'm not sure how these values are encoded so I enumerated all possibilities:
+
+There are 40 possible temperatures for the automatic mode (-2C - 37C):
 
     0 1 0 0 0 1 1  # -2      0 0 1 1 0 0 1  # 11     0 0 1 0 1 1 0  # 24
     0 0 0 0 0 1 1  # -1      0 1 0 1 0 0 1  # 12     0 1 0 0 1 1 0  # 25
@@ -101,10 +112,15 @@ Again, I'm not sure how these values are encoded so I enumerated all possibiliti
     1 0 1 1 0 0 1  # 10      0 1 1 0 1 1 0  # 23     1 1 1 1 1 0 0  # 36
                                                      1 0 1 1 1 0 0  # 37
 
+Again, these values are bit reversed and inverted and correspond
+to the temperature in Fahrenheit.
 
 ##### Checksum:
-Figuring out how the checksum is calculated was a bit tricky.
-Through some trial and error I was able to determine this:
+
+The checksum is calculated by XORing the state, speed and temperature
+fields with the "unknown" part marked in red in the above image.
+
+This can be written as:
 
     checksum[0] = state[0] XOR speed[0] XOR temperature[0]
     checksum[1] = state[1] XOR speed[1] XOR temperature[1]
